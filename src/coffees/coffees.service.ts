@@ -4,24 +4,33 @@ import {
   //   HttpException,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CoffeesEntity } from './entities/coffee.entity';
+import { UpdateCoffeeDto } from './dto/update-coffee.dto';
+import { CreateCoffeeDto } from './dto/create-coffee.dto';
 @Injectable()
 export class CoffeesService {
-  private coffeesEntity: CoffeesEntity[] = [
-    {
-      id: 1,
-      name: 'anzar',
-      brand: 'caffene',
-      flavours: ['black'],
-    },
-  ];
+  // private coffeesEntity: CoffeesEntity[] = [
+  //   {
+  //     id: 1,
+  //     name: 'anzar',
+  //     brand: 'caffene',
+  //     flavours: ['black'],
+  //   },
+  // ];
+
+  constructor(
+    @InjectRepository(CoffeesEntity)
+    private readonly coffeeRepo: Repository<CoffeesEntity>,
+  ) {}
 
   findAllFlavours(res: any) {
-    res.status('201').send(this.coffeesEntity);
+    res.status('201').send(this.coffeeRepo.find());
   }
 
   findOneFlavour(id: string) {
-    const coffee = this.coffeesEntity.find((item) => item.id === +id);
+    const coffee = this.coffeeRepo.findOne(id);
     if (!coffee) {
       //   throw new HttpException(
       //     `Data not found for this id ${id}`,
@@ -32,16 +41,24 @@ export class CoffeesService {
     return coffee;
   }
 
-  createOneFlavour(createCoffeeDto: any): void {
-    this.coffeesEntity.push(createCoffeeDto);
+  createOneFlavour(createCoffeeDto: CreateCoffeeDto) {
+    const createCoffee = this.coffeeRepo.create(createCoffeeDto);
+    return this.coffeeRepo.save(createCoffee);
   }
 
   changeHttpFlavour(name: string) {
     return `We have added new coffee flavour ${name} flavour and your http status is now `;
   }
 
-  updateFlavour(id: string, updateCoffeeDto: any) {
-    return ` We have updated flavour of id ${id} => ${updateCoffeeDto}`;
+  async updateFlavour(id: string, updateCoffeeDto: UpdateCoffeeDto) {
+    const updateCoffee = await this.coffeeRepo.preload({
+      id: +id,
+      ...updateCoffeeDto,
+    });
+    if (!updateCoffee) {
+      throw new NotFoundException(`Data not found for this id ${id}`);
+    }
+    return this.coffeeRepo.save(updateCoffee);
   }
 
   DeleteFlavour(id: string, name: string) {
