@@ -25,12 +25,13 @@ export class CoffeesService {
     private readonly coffeeRepo: Repository<CoffeesEntity>,
   ) {}
 
-  findAllFlavours(res: any) {
-    res.status('201').send(this.coffeeRepo.find());
+  findAllFlavours() {
+    return this.coffeeRepo.find();
+    // res.status('201').send(this.coffeeRepo.find());
   }
 
-  findOneFlavour(id: string) {
-    const coffee = this.coffeeRepo.findOne(id);
+  async findOneFlavour(id: string) {
+    const coffee = await this.coffeeRepo.findOne(id);
     if (!coffee) {
       //   throw new HttpException(
       //     `Data not found for this id ${id}`,
@@ -61,7 +62,8 @@ export class CoffeesService {
     return this.coffeeRepo.save(updateCoffee);
   }
 
-  DeleteFlavour(id: string, name: string) {
-    return ` We have Deleted flavour of id ${id} namely ${name}`;
+  async DeleteFlavour(id: string) {
+    const coffee = await this.coffeeRepo.findOne(id);
+    return this.coffeeRepo.remove(coffee);
   }
 }

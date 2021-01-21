@@ -21,8 +21,8 @@ export class CoffeesController {
 
   @Get('flavours')
   //   @HttpCode(HttpStatus.GONE) here due to @Res @httpCode will not work
-  findAllFlavours(@Res() res: any) {
-    return this.coffeesService.findAllFlavours(res);
+  findAllFlavours() {
+    return this.coffeesService.findAllFlavours();
   }
 
   @Get(':id')
@@ -51,7 +51,7 @@ export class CoffeesController {
   }
 
   @Delete('DeleteFlavour/:id')
-  DeleteFlavour(@Param('id') id: string, @Body('flavour') name: string) {
-    return this.coffeesService.DeleteFlavour(id, name);
+  DeleteFlavour(@Param('id') id: string) {
+    return this.coffeesService.DeleteFlavour(id);
   }
 }
