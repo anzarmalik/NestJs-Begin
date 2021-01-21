@@ -1,6 +1,5 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CoffeesEntity } from './coffee.entity';
-
 @Entity()
 export class Flavour {
   @PrimaryGeneratedColumn()

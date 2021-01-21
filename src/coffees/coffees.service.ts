@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CoffeesEntity } from './entities/coffee.entity';
+import { Flavour } from './entities/flavour.entity';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 @Injectable()
@@ -23,15 +24,21 @@ export class CoffeesService {
   constructor(
     @InjectRepository(CoffeesEntity)
     private readonly coffeeRepo: Repository<CoffeesEntity>,
+    @InjectRepository(Flavour)
+    private readonly flavourRepo: Repository<Flavour>,
   ) {}
 
   findAllFlavours() {
-    return this.coffeeRepo.find();
+    return this.coffeeRepo.find({
+      relations: ['flavours'],
+    });
     // res.status('201').send(this.coffeeRepo.find());
   }
 
   async findOneFlavour(id: string) {
-    const coffee = await this.coffeeRepo.findOne(id);
+    const coffee = await this.coffeeRepo.findOne(id, {
+      relations: ['flavours'],
+    });
     if (!coffee) {
       //   throw new HttpException(
       //     `Data not found for this id ${id}`,
@@ -42,8 +49,17 @@ export class CoffeesService {
     return coffee;
   }
 
-  createOneFlavour(createCoffeeDto: CreateCoffeeDto) {
-    const createCoffee = this.coffeeRepo.create(createCoffeeDto);
+  async createOneFlavour(createCoffeeDto: CreateCoffeeDto) {
+    const flavour = await Promise.all(
+      createCoffeeDto.flavours.map((flavourName) => {
+        this.preloadFlavourByName(flavourName);
+      }),
+    );
+
+    const createCoffee = this.coffeeRepo.create({
+      ...(createCoffeeDto as any),
+      flavour,
+    });
     return this.coffeeRepo.save(createCoffee);
   }
 
@@ -52,9 +68,18 @@ export class CoffeesService {
   }
 
   async updateFlavour(id: string, updateCoffeeDto: UpdateCoffeeDto) {
+    const flavour =
+      updateCoffeeDto.flavours &&
+      (await Promise.all(
+        updateCoffeeDto.flavours.map((flavourName) => {
+          this.preloadFlavourByName(flavourName);
+        }),
+      ));
+
     const updateCoffee = await this.coffeeRepo.preload({
       id: +id,
-      ...updateCoffeeDto,
+      ...(updateCoffeeDto as any),
+      flavour,
     });
     if (!updateCoffee) {
       throw new NotFoundException(`Data not found for this id ${id}`);
@@ -65,5 +90,14 @@ export class CoffeesService {
   async DeleteFlavour(id: string) {
     const coffee = await this.coffeeRepo.findOne(id);
     return this.coffeeRepo.remove(coffee);
+  }
+
+  private async preloadFlavourByName(name: string): Promise<Flavour> {
+    const existingFlavour = await this.flavourRepo.findOne({ name });
+    if (existingFlavour) {
+      return existingFlavour;
+    }
+
+    return this.flavourRepo.create({ name });
   }
 }

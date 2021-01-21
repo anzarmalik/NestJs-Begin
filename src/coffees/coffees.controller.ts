@@ -32,8 +32,8 @@ export class CoffeesController {
 
   @Post()
   createOneFlavour(@Body() createCoffeeDto: CreateCoffeeDto) {
-    this.coffeesService.createOneFlavour(createCoffeeDto);
-    return `Data has been created`;
+    // return `Data has been created`;
+    return this.coffeesService.createOneFlavour(createCoffeeDto);
   }
 
   @Post('customHttpMethod')
