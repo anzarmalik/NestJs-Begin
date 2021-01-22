@@ -9,11 +9,13 @@ import {
   Res,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 
 import { CoffeesService } from './coffees.service';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @Controller('coffees')
 export class CoffeesController {
@@ -21,8 +23,8 @@ export class CoffeesController {
 
   @Get('flavours')
   //   @HttpCode(HttpStatus.GONE) here due to @Res @httpCode will not work
-  findAllFlavours() {
-    return this.coffeesService.findAllFlavours();
+  findAllFlavours(@Query() paginationQueryDto: PaginationQueryDto) {
+    return this.coffeesService.findAllFlavours(paginationQueryDto);
   }
 
   @Get(':id')
