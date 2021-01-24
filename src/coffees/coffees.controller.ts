@@ -16,6 +16,7 @@ import { CoffeesService } from './coffees.service';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ParseIntPipe } from '../common/pipes/parse-int.pipe';
 
 @Controller('coffees')
 export class CoffeesController {
@@ -28,7 +29,7 @@ export class CoffeesController {
   }
 
   @Get(':id')
-  findOneFlavour(@Param('id') id: string) {
+  findOneFlavour(@Param('id', ParseIntPipe) id: string) {
     return this.coffeesService.findOneFlavour(id);
   }
 
